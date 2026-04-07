@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>ABA Sorting - Endless Levels</title>
+    <script src="/static/js/game-tracker.js"></script>
+    <script src="/static/js/pepper-voice.js"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 40px;
+            padding: 40px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+        }
+        h1 { text-align: center; color: #333; margin-bottom: 30px; }
+        .stats {
+            display: flex;
+            justify-content: space-around;
+            margin: 20px 0;
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 30px;
+        }
+        .stat {
+            text-align: center;
+        }
+        .stat-number {
+            font-size: 2em;
+            font-weight: bold;
+            color: #667eea;
+        }
+        .game-area {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 40px;
+            justify-content: center;
+            margin: 40px 0;
+        }
+        .items-area {
+            flex: 1;
+            min-width: 250px;
+        }
+        .categories-area {
+            flex: 1;
+            min-width: 250px;
+        }
+        .item-card {
+            background: #f8f9fa;
+            border-radius: 20px;
+            padding: 20px;
+            margin: 15px 0;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            cursor: pointer;
+            transition: 0.3s;
+            border: 3px solid transparent;
+        }
+        .item-card:hover {
+            transform: translateX(10px);
+            border-color: #667eea;
+        }
+        .item-card.dragging {
+            opacity: 0.5;
+        }
+        .item-icon {
+            font-size: 3em;
+        }
+        .category-card {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border-radius: 20px;
+            padding: 20px;
+            margin: 15px 0;
+            text-align: center;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        .category-card:hover {
+            transform: scale(1.02);
+        }
+        .message {
+            text-align: center;
+            padding: 20px;
+            border-radius: 30px;
+            font-size: 1.2em;
+            margin: 20px 0;
+        }
+        .next-level-btn {
+            display: block;
+            margin: 30px auto;
+            padding: 15px 40px;
+            background: linear-gradient(135deg, #28a745, #20c997);
+            color: white;
+            border: none;
+            border-radius: 50px;
+            font-size: 1.2em;
+            cursor: pointer;
+        }
+        .back-btn {
+            display: block;
+            text-align: center;
+            margin-top: 20px;
+            color: #667eea;
+            text-decoration: none;
+        }
+        .celebration {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1000;
+        }
+        .balloon {
+            position: absolute;
+            bottom: -100px;
+            animation: floatUp 4s ease-out forwards;
+            font-size: 2.5em;
+        }
+        .star {
+            position: absolute;
+            font-size: 2em;
+            animation: twinkle 1s ease-out forwards;
+        }
+        @keyframes floatUp {
+            0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+            100% { transform: translateY(-100vh) rotate(360deg); opacity: 0; }
+        }
+        @keyframes twinkle {
+            0% { transform: scale(0) rotate(0deg); opacity: 1; }
+            50% { transform: scale(1.5) rotate(180deg); }
+            100% { transform: scale(0) rotate(360deg); opacity: 0; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📊 ABA Sorting - Endless Levels</h1>
+        
+        <div class="stats">
+            <div class="stat">
+                <div class="stat-number" id="level">1</div>
+                <div>Level</div>
+            </div>
+            <div class="stat">
+                <div class="stat-number" id="score">0</div>
+                <div>Score</div>
+            </div>
+            <div class="stat">
+                <div class="stat-number" id="correct">0</div>
+                <div>✅ Correct</div>
+            </div>
+            <div class="stat">
+                <div class="stat-number" id="wrong">0</div>
+                <div>❌ Wrong</div>
+            </div>
+        </div>
+        
+        <div class="game-area">
+            <div class="items-area">
+                <h3>📦 Sort These Items:</h3>
+                <div id="itemsList"></div>
+            </div>
+            <div class="categories-area">
+                <h3>🎯 Categories:</h3>
+                <div id="categoriesList"></div>
+            </div>
+        </div>
+        
+        <div class="message" id="message"></div>
+        
+        <button class="next-level-btn" onclick="nextLevel()">🌟 Next Level</button>
+        
+        <a href="/" class="back-btn">← Back to Games</a>
+    </div>
+    
+    <div id="celebration" class="celebration"></div>
+    
+    <script>
+        const stats = new GameStats('aba_sorting');
+        let level = 1;
+        let score = 0;
+        let correct = 0;
+        let currentItem = null;
+        let currentItems = [];
+        let categories = [];
+        
+        // Progressive difficulty - more items and categories per level
+        function generateLevel() {
+            const numItems = Math.min(3 + Math.floor(level / 2), 8);
+            const categoryList = [
+                { name: 'Fruits', items: ['🍎 Apple', '🍌 Banana', '🍊 Orange', '🍇 Grape', '🍒 Cherry'], icon: '🍎' },
+                { name: 'Animals', items: ['🐶 Dog', '🐱 Cat', '🐭 Mouse', '🐹 Hamster', '🐰 Rabbit'], icon: '🐶' },
+                { name: 'Colors', items: ['🔴 Red', '🔵 Blue', '🟢 Green', '🟡 Yellow', '🟠 Orange'], icon: '🎨' },
+                { name: 'Vehicles', items: ['🚗 Car', '🚲 Bike', '✈️ Plane', '🚂 Train', '🚁 Helicopter'], icon: '🚗' },
+                { name: 'Toys', items: ['🧸 Teddy', '🎮 Game', '🚂 Train', '🪁 Kite', '🧩 Puzzle'], icon: '🧸' }
+            ];
+            
+            // Select random categories
+            const shuffled = [...categoryList];
+            for (let i = shuffled.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+            }
+            categories = shuffled.slice(0, Math.min(numItems, 4));
+            
+            // Generate items
+            currentItems = [];
+            categories.forEach(cat => {
+                const shuffledItems = [...cat.items];
+                for (let i = shuffledItems.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [shuffledItems[i], shuffledItems[j]] = [shuffledItems[j], shuffledItems[i]];
+                }
+                const item = shuffledItems[0];
+                currentItems.push({
+                    name: item,
+                    category: cat.name,
+                    icon: cat.icon
+                });
+            });
+            
+            // Shuffle items
+            for (let i = currentItems.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [currentItems[i], currentItems[j]] = [currentItems[j], currentItems[i]];
+            }
+            
+            renderGame();
+        }
+        
+        function renderGame() {
+            // Render items
+            const itemsDiv = document.getElementById('itemsList');
+            itemsDiv.innerHTML = '';
+            currentItems.forEach((item, idx) => {
+                const card = document.createElement('div');
+                card.className = 'item-card';
+                card.setAttribute('data-category', item.category);
+                card.setAttribute('data-name', item.name);
+                card.onclick = () => selectItem(card, item.category, item.name);
+                card.innerHTML = `
+                    <div class="item-icon">${item.icon || '📦'}</div>
+                    <div><strong>${item.name}</strong></div>
+                `;
+                itemsDiv.appendChild(card);
+            });
+            
+            // Render categories
+            const catsDiv = document.getElementById('categoriesList');
+            catsDiv.innerHTML = '';
+            categories.forEach(cat => {
+                const card = document.createElement('div');
+                card.className = 'category-card';
+                card.setAttribute('data-category', cat.name);
+                card.onclick = () => dropToCategory(cat.name);
+                card.innerHTML = `
+                    <div style="font-size: 2em;">${cat.icon}</div>
+                    <div><strong>${cat.name}</strong></div>
+                `;
+                catsDiv.appendChild(card);
+            });
+            
+            document.getElementById('message').innerHTML = '';
+        }
+        
+        function selectItem(card, category, name) {
+            // Remove previous selection
+            document.querySelectorAll('.item-card').forEach(c => c.style.borderColor = 'transparent');
+            card.style.borderColor = '#ffd700';
+            currentItem = { card, category, name };
+        }
+        
+        function dropToCategory(catName) {
+            if (!currentItem) {
+                showMessage('First select an item to sort!', 'error');
+                return;
+            }
+            
+            if (currentItem.category === catName) {
+                // Correct sorting!
+                currentItem.card.remove();
+                correct++;
+                score += 10 * level;
+                stats.addCorrect();
+                showMessage('✅ Correct! +' + (10 * level) + ' points', 'success');
+                celebrate();
+                PepperVoice.speak(`Great! ${currentItem.name} goes to ${catName}!`);
+                
+                // Check if all items sorted
+                const remainingItems = document.querySelectorAll('.item-card').length;
+                if (remainingItems === 0) {
+                    showMessage('🎉 Level Complete! +50 bonus points!', 'success');
+                    score += 50;
+                    stats.addCorrect();
+                    stats.levelUp();
+                    level++;
+                    celebrateBig();
+                    setTimeout(() => {
+                        generateLevel();
+                        updateStats();
+                    }, 2000);
+                }
+            } else {
+                // Wrong sorting!
+                stats.addWrong();
+                showMessage(`❌ Wrong! ${currentItem.name} goes to ${currentItem.category}`, 'error');
+                PepperVoice.speak(`That's not right. ${currentItem.name} belongs to ${currentItem.category}.`);
+            }
+            
+            currentItem = null;
+            document.querySelectorAll('.item-card').forEach(c => c.style.borderColor = 'transparent');
+            updateStats();
+        }
+        
+        function showMessage(text, type) {
+            const msgDiv = document.getElementById('message');
+            msgDiv.textContent = text;
+            msgDiv.style.background = type === 'success' ? '#d4edda' : '#f8d7da';
+            msgDiv.style.color = type === 'success' ? '#155724' : '#721c24';
+            setTimeout(() => {
+                msgDiv.textContent = '';
+            }, 2000);
+        }
+        
+        function celebrate() {
+            const celebrationDiv = document.getElementById('celebration');
+            
+            // Create balloons
+            for (let i = 0; i < 10; i++) {
+                setTimeout(() => {
+                    const balloon = document.createElement('div');
+                    const colors = ['🎈', '🎈', '🎈', '🎈', '🎈'];
+                    balloon.className = 'balloon';
+                    balloon.textContent = colors[Math.floor(Math.random() * colors.length)];
+                    balloon.style.left = Math.random() * 100 + '%';
+                    balloon.style.fontSize = (Math.random() * 30 + 20) + 'px';
+                    celebrationDiv.appendChild(balloon);
+                    setTimeout(() => balloon.remove(), 4000);
+                }, i * 100);
+            }
+            
+            // Create stars
+            for (let i = 0; i < 15; i++) {
+                setTimeout(() => {
+                    const star = document.createElement('div');
+                    star.className = 'star';
+                    star.textContent = ['⭐', '🌟', '✨', '💫'][Math.floor(Math.random() * 4)];
+                    star.style.left = Math.random() * 100 + '%';
+                    star.style.top = Math.random() * 100 + '%';
+                    star.style.fontSize = (Math.random() * 20 + 15) + 'px';
+                    celebrationDiv.appendChild(star);
+                    setTimeout(() => star.remove(), 1000);
+                }, i * 50);
+            }
+        }
+        
+        function celebrateBig() {
+            for (let i = 0; i < 30; i++) {
+                setTimeout(() => {
+                    const balloon = document.createElement('div');
+                    balloon.className = 'balloon';
+                    balloon.textContent = ['🎈', '🎉', '⭐', '🌟'][Math.floor(Math.random() * 4)];
+                    balloon.style.left = Math.random() * 100 + '%';
+                    balloon.style.fontSize = (Math.random() * 40 + 25) + 'px';
+                    document.getElementById('celebration').appendChild(balloon);
+                    setTimeout(() => balloon.remove(), 4000);
+                }, i * 100);
+            }
+            
+            for (let i = 0; i < 30; i++) {
+                setTimeout(() => {
+                    const star = document.createElement('div');
+                    star.className = 'star';
+                    star.textContent = '⭐';
+                    star.style.left = Math.random() * 100 + '%';
+                    star.style.top = Math.random() * 100 + '%';
+                    document.getElementById('celebration').appendChild(star);
+                    setTimeout(() => star.remove(), 1500);
+                }, i * 80);
+            }
+            
+            PepperVoice.speak(`Level ${level} complete! Amazing work!`);
+        }
+        
+        function nextLevel() {
+            level++;
+            generateLevel();
+            updateStats();
+            celebrate();
+        }
+        
+        function updateStats() {
+            document.getElementById('level').textContent = level;
+            document.getElementById('score').textContent = score;
+            document.getElementById('correct').textContent = correct;
+            document.getElementById('wrong').textContent = stats.wrong;
+        }
+        
+        PepperVoice.speak("Welcome to ABA Sorting! Sort each item into the correct category!");
+        generateLevel();
+    </script>
+</body>
+</html>
