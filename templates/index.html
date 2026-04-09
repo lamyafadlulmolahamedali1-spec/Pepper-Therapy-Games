@@ -1,83 +1,55 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Pepper Therapy - Parent Dashboard</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#667eea">
+    <link rel="manifest" href="/manifest.json">
+    <link rel="apple-touch-icon" href="/static/icons/icon-192.png">
+    <title>Pepper Therapy</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
             display: flex;
-            align-items: center;
             justify-content: center;
+            align-items: center;
+            margin: 0;
             padding: 20px;
         }
         .container {
-            max-width: 500px;
-            width: 100%;
             background: white;
             border-radius: 40px;
-            padding: 50px;
+            padding: 40px;
             text-align: center;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+            max-width: 500px;
         }
-        h1 {
-            font-size: 2.5em;
-            color: #333;
-            margin-bottom: 10px;
-        }
-        .subtitle {
-            color: #666;
-            margin-bottom: 40px;
-        }
-        .buttons {
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-        }
+        h1 { color: #333; font-size: 2.5em; margin-bottom: 10px; }
         .btn {
-            padding: 20px;
-            border-radius: 30px;
-            text-decoration: none;
-            font-weight: bold;
-            font-size: 1.2em;
-            transition: 0.3s;
-        }
-        .btn-primary {
+            display: inline-block;
+            padding: 15px 30px;
             background: linear-gradient(135deg, #667eea, #764ba2);
             color: white;
-        }
-        .btn-secondary {
-            background: #f0f0f0;
-            color: #333;
-        }
-        .btn:hover {
-            transform: scale(1.02);
-        }
-        .stats {
-            margin-top: 40px;
-            color: #666;
-            font-size: 0.9em;
+            text-decoration: none;
+            border-radius: 30px;
+            margin: 10px;
+            font-weight: bold;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>📊 Pepper Therapy</h1>
-        <div class="subtitle">Parent Dashboard & Analytics</div>
-        <div class="buttons">
-            <a href="/parent/login" class="btn btn-primary">👨‍👩‍👧 Parent Login</a>
-            <a href="/parent/register" class="btn btn-secondary">📝 Parent Register</a>
-            <a href="/child/login" class="btn btn-secondary">🧒 Child Login</a>
-        </div>
-        <div class="stats">
-            <p>Track your child's progress | Detailed reports | Analytics</p>
-        </div>
+        <h1>🎮 Pepper Therapy</h1>
+        <p>Interactive Games for Children with Autism</p>
+        <a href="/games" class="btn">Play Games</a>
     </div>
+    <script>
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/sw.js')
+                .then(reg => console.log('SW registered'))
+                .catch(err => console.log('SW error:', err));
+        }
+    </script>
 </body>
 </html>

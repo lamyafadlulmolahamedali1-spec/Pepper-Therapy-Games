@@ -1,4 +1,4 @@
-from flask import Flask, render_template
+from flask import Flask, render_template, send_from_directory
 import os
 
 app = Flask(__name__, template_folder='templates', static_folder='static')
@@ -39,6 +39,10 @@ ICONS = {
 
 @app.route('/')
 def index():
+    return render_template('index.html', games=ALL_GAMES, icons=ICONS)
+
+@app.route('/games')
+def games():
     return render_template('games_list.html', games=ALL_GAMES, icons=ICONS)
 
 @app.route('/game/<name>')
@@ -52,10 +56,5 @@ def progress():
     return render_template('progress.html')
 
 if __name__ == '__main__':
-    print("\n" + "="*60)
-    print("🎮 PEPPER THERAPY - ALL GAMES WORKING")
-    print("="*60)
-    print(f"📍 http://localhost:5009")
-    print(f"📍 Total Games: {len(ALL_GAMES)}")
-    print("="*60)
-    app.run(debug=True, host='0.0.0.0', port=5009)
+    port = int(os.environ.get('PORT', 5000))
+    app.run(debug=False, host='0.0.0.0', port=port)

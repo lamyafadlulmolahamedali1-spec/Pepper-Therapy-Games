@@ -1,7 +1,9 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Pepper Therapy - Games</title>
+    <title>Games - Pepper Therapy</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="manifest" href="/manifest.json">
     <style>
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -10,10 +12,10 @@
             margin: 0;
         }
         .container {
-            max-width: 1200px;
+            max-width: 800px;
             margin: 0 auto;
             background: white;
-            border-radius: 30px;
+            border-radius: 40px;
             padding: 30px;
             box-shadow: 0 20px 40px rgba(0,0,0,0.2);
         }
@@ -29,17 +31,19 @@
         }
         .games-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-            gap: 20px;
+            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+            gap: 15px;
         }
         .game-card {
             background: #f8f9fa;
-            border-radius: 20px;
+            border-radius: 25px;
             padding: 20px;
             text-align: center;
             transition: 0.3s;
             cursor: pointer;
             border: 2px solid transparent;
+            text-decoration: none;
+            display: block;
         }
         .game-card:hover {
             transform: translateY(-5px);
@@ -47,7 +51,7 @@
             box-shadow: 0 10px 20px rgba(0,0,0,0.1);
         }
         .game-icon {
-            font-size: 3.5em;
+            font-size: 3em;
             margin-bottom: 10px;
         }
         .game-name {
@@ -55,7 +59,11 @@
             font-size: 0.9em;
             color: #333;
         }
-        a {
+        .back-btn {
+            display: block;
+            text-align: center;
+            margin-top: 30px;
+            color: #667eea;
             text-decoration: none;
         }
         .progress-link {
@@ -64,35 +72,32 @@
         }
         .progress-link a {
             display: inline-block;
-            padding: 12px 30px;
-            background: linear-gradient(135deg, #28a745, #20c997);
+            padding: 10px 20px;
+            background: #28a745;
             color: white;
             text-decoration: none;
             border-radius: 30px;
-            font-weight: bold;
+            margin: 5px;
         }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="progress-link">
-    <a href="https://gemini.google.com" target="_blank" style="display: inline-block; padding: 12px 30px; background: linear-gradient(135deg, #4285f4, #ea4335); color: white; text-decoration: none; border-radius: 30px; font-weight: bold; margin-right: 10px;">✨ Google Gemini AI (Safe for Kids) ✨</a>
-
-            <a href="/progress">📊 View All Progress</a>
-            <a href="/game/autism_games" style="margin-left: 10px; background: linear-gradient(135deg, #ff6b6b, #ee5a24);">🌟 52+ Autism Projects</a>
+            <a href="/progress">📊 View Progress Dashboard</a>
+            <a href="https://gemini.google.com" target="_blank">✨ Google Gemini AI</a>
         </div>
-        <h1>🎮 Pepper Therapy Games</h1>
-        <div class="subtitle">{{ games|length }} games available - Click to play</div>
+        <h1>🎮 All Games</h1>
+        <div class="subtitle">{{ games|length }} games available</div>
         <div class="games-grid">
             {% for game in games %}
-            <a href="/game/{{ game }}">
-                <div class="game-card">
-                    <div class="game-icon">{{ icons[game] }}</div>
-                    <div class="game-name">{{ game.replace('_', ' ').title() }}</div>
-                </div>
+            <a href="/game/{{ game }}" class="game-card">
+                <div class="game-icon">{{ icons[game] }}</div>
+                <div class="game-name">{{ game.replace('_', ' ').title() }}</div>
             </a>
             {% endfor %}
         </div>
+        <a href="/" class="back-btn">← Back to Home</a>
     </div>
 </body>
 </html>
